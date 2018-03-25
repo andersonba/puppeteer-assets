@@ -65,7 +65,7 @@ app.get('/metrics', (() => {
           const options = {
             internalRegex: ASSETS_INTERNAL_REGEX,
           };
-          console.log(pageUrl, options)
+          console.log(pageUrl, options);
           metrics = await run(pageUrl, options); // TODO: options - use env
         } catch (e) {
           console.error(e);
