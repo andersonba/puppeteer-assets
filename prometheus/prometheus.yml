@@ -1,0 +1,33 @@
+global:
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  evaluation_interval: 15s
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets: []
+    scheme: http
+    timeout: 10s
+scrape_configs:
+- job_name: home
+  scrape_interval: 1d
+  scrape_timeout: 15s
+  metrics_path: /metrics
+  scheme: http
+  params:
+    url:
+      - www.jusbrasil.com.br/home
+  static_configs:
+  - targets:
+    - server:3000
+- job_name: news
+  scrape_interval: 1d
+  scrape_timeout: 15s
+  metrics_path: /metrics
+  scheme: http
+  params:
+    url:
+      - jusbrasil.jusbrasil.com.br/artigos/268539228/slug
+  static_configs:
+  - targets:
+    - server:3000

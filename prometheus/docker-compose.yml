@@ -1,0 +1,27 @@
+version: '3'
+services:
+  server:
+    build:
+      context: ..
+      dockerfile: prometheus/Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ..:/app
+      - /app/node_modules
+      - /app/prometheus/node_modules
+    environment:
+      - ASSETS_PAGE_URL=www.jusbrasil.com.br
+      - ASSETS_INTERNAL_REGEX=az.jusbr.com
+
+  prometheus:
+    image: quay.io/prometheus/prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    links:
+      - server
+    ports:
+      - "9090:9090"
+
+volumes:
+  prometheus.yml:
