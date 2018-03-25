@@ -1,0 +1,27 @@
+{
+  "name": "puppeteer-assets",
+  "version": "0.1.0",
+  "description": "Assets metrics for Puppeteer",
+  "main": "index.js",
+  "bin": "bin/cli.js",
+  "repository": "https://github.com/andersonba/puppeteer-assets",
+  "author": "Anderson de Oliveira",
+  "license": "MIT",
+  "scripts": {
+    "lint": "eslint index bin prometheus",
+    "cli": "node ./bin/cli"
+  },
+  "dependencies": {
+    "cli-table": "^0.3.1",
+    "dotenv": "^5.0.1",
+    "filesize": "^3.6.1",
+    "lodash": "^4.17.5",
+    "puppeteer": "^1.2.0",
+    "yargs": "^11.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^4.19.1",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.9.0"
+  }
+}
