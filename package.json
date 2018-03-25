@@ -1,7 +1,7 @@
 {
   "name": "puppeteer-assets",
   "version": "0.1.0",
-  "description": "Assets metrics for Puppeteer",
+  "description": "Assets metrics using Puppeteer",
   "main": "index.js",
   "bin": "bin/cli.js",
   "repository": "https://github.com/andersonba/puppeteer-assets",
