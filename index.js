@@ -8,7 +8,8 @@ function sanitizeUrl(url) {
   return url;
 }
 
-async function run(pageUrl, options = {}) {
+async function run(plainUrl, options = {}) {
+  const pageUrl = sanitizeUrl(plainUrl);
   const {
     mimeTypes = ['javascript'],
     internalRegex,
@@ -38,7 +39,9 @@ async function run(pageUrl, options = {}) {
       return;
     }
 
-    const isInternal = url.startsWith(pageUrl) || (internalRegex ? new RegExp(internalRegex).test(url) : false);
+    const isInternal = url.startsWith(pageUrl) || (
+      internalRegex ? new RegExp(internalRegex).test(url) : false
+    );
     const asset = assets[url];
     assets[url] = {
       mimeType,
@@ -48,7 +51,7 @@ async function run(pageUrl, options = {}) {
     };
   });
 
-  await page.goto(sanitizeUrl(pageUrl), {
+  await page.goto(pageUrl, {
     waitUntil: 'networkidle0',
   });
 
