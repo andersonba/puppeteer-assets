@@ -20,9 +20,9 @@ const { argv } = require('yargs')
     describe: 'Filter assets based on mime type',
     default: ['javascript'],
   })
-  .option('internalRegex', {
+  .option('internalPattern', {
     alias: 'i',
-    describe: 'Sets assets as internal scripts based on RegExp',
+    describe: 'Sets assets as internal scripts based on regex pattern',
   });
 
 const { url, ...args } = argv;

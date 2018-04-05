@@ -12,7 +12,7 @@ async function run(plainUrl, options = {}) {
   const pageUrl = sanitizeUrl(plainUrl);
   const {
     mimeTypes = ['javascript'],
-    internalRegex,
+    internalPattern,
   } = options;
 
   const browser = await puppeteer.launch({
@@ -40,7 +40,7 @@ async function run(plainUrl, options = {}) {
     }
 
     const isInternal = url.startsWith(pageUrl) || (
-      internalRegex ? new RegExp(internalRegex).test(url) : false
+      internalPattern ? new RegExp(internalPattern).test(url) : false
     );
     const asset = assets[url];
     assets[url] = {

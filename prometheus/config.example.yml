@@ -1,0 +1,6 @@
+url: www.yoursite.com
+options:
+  internalPattern: mycdn.com
+  mimeTypes:
+    - javascript
+    - css

@@ -10,9 +10,6 @@ services:
       - ..:/app
       - /app/node_modules
       - /app/prometheus/node_modules
-    environment:
-      - ASSETS_PAGE_URL=www.jusbrasil.com.br
-      - ASSETS_INTERNAL_REGEX=az.jusbr.com
 
   prometheus:
     image: quay.io/prometheus/prometheus
@@ -23,5 +20,13 @@ services:
     ports:
       - "9090:9090"
 
+  grafana:
+    image: grafana/grafana
+    volumes:
+      - ./data/grafana:/var/lib/grafana
+    ports:
+      - "3001:3000"
+
 volumes:
   prometheus.yml:
+  config.example.yml:

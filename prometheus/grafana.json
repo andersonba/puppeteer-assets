@@ -142,7 +142,7 @@
         "#d44a3a"
       ],
       "datasource": "${DS_PROMETHEUS}",
-      "format": "kbytes",
+      "format": "bytes",
       "gauge": {
         "maxValue": 500000,
         "minValue": null,
@@ -607,5 +607,5 @@
   "timezone": "",
   "title": "Scripts metrics",
   "uid": "000000047",
-  "version": 24
+  "version": 1
 }

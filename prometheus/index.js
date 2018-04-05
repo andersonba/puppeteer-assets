@@ -4,13 +4,14 @@ const bodyParser = require('body-parser');
 const Cache = require('ttl-cache');
 const run = require('..');
 const promClient = require('prom-client');
+const YAML = require('yamljs');
 
-require('dotenv').config();
-
-const { ASSETS_PAGE_URL, ASSETS_INTERNAL_REGEX } = process.env;
-if (!process.env.ASSETS_PAGE_URL) {
-  console.error('You need to set the ASSETS_PAGE_URL environment variable');
-  process.exit(1);
+let config = {};
+try {
+  config = YAML.load(`${__dirname}/config.yml`) || {};
+  console.info('Using configuration file');
+} catch (e) {
+  // pass
 }
 
 const app = express();
@@ -55,21 +56,19 @@ app.get('/metrics', (() => {
     labelNames: ['page'],
   });
 
-  const configureMetric = async (req) => {
-    const pageUrl = req.query.url || ASSETS_PAGE_URL;
+  const configureMetric = async (pageUrl, options) => {
     let metrics = cache.get(pageUrl);
+
     if (!metrics) {
       if (!running) {
         running = true;
+
         try {
-          const options = {
-            internalRegex: ASSETS_INTERNAL_REGEX,
-          };
-          console.log(pageUrl, options);
-          metrics = await run(pageUrl, options); // TODO: options - use env
+          metrics = await run(pageUrl, options);
         } catch (e) {
           console.error(e);
         }
+
         running = false;
         cache.set(pageUrl, metrics);
       } else {
@@ -94,10 +93,21 @@ app.get('/metrics', (() => {
   };
 
   async function middleware(req, res, next) {
+    const { url, ...qsOptions } = req.query;
+    const pageUrl = url || config.url;
+    const options = { ...qsOptions, ...config.options };
+
+    console.log('GET', pageUrl, options);
+
+    if (!pageUrl) {
+      res.status(400).send('No Page URL defined');
+      return;
+    }
+
     res.writeHead(200, { 'Content-Type': 'text/plain' });
 
     try {
-      await configureMetric(req);
+      await configureMetric(pageUrl, options);
     } catch (e) {
       console.error(e);
     }
@@ -111,4 +121,9 @@ app.get('/metrics', (() => {
 
 const server = app.listen(process.env.PORT || 3000, () => {
   console.log('Server listening on port %d', server.address().port);
+
+  if (Object.keys(config).length) {
+    console.log('Configuration file:');
+    console.log(config);
+  }
 });

@@ -30,16 +30,21 @@ Exports assets metrics via HTTP for Prometheus consumption.
 ![Grafana](resources/grafana.png)
 
 Use [docker image](https://hub.docker.com/r/andersonba/prometheus-assets/):
+
 ```bash
-docker run --name=prometheus-assets -e ASSETS_PAGE_URL=www.google.com -d -p 3000:3000 andersonba/prometheus-assets
+docker run --name=prometheus-assets -d -p 3000:3000 andersonba/prometheus-assets
 ```
 
-Now, add the target in your `prometheus.yaml`.
-You can monitor multiple URLs passing `params` each scrape config. [See example](prometheus/prometheus.yml#L12-L33)
+Now, in your Prometheus configuration ([/etc/prometheus/prometheus.yml](https://prometheus.io/docs/prometheus/latest/configuration/configuration/)), add a new target.
 
-#### Environment variables
-- `ASSETS_PAGE_URL`
-- `ASSETS_INTERNAL_REGEX`
+You can monitor multiple URLs passing `params` each scrape config. [See example](prometheus/prometheus.yml#L12-L37)
+
+If you prefer use a configuration file, create a [config.yml](prometheus/config.example.yml) file. Then, run the container defining
+the volume:
+
+```bash
+docker run --name=prometheus-assets -v /tmp/config.yml:/app/prometheus/ -d -p 3000:3000 andersonba/prometheus-assets
+```
 
 ## Reference
 
@@ -48,5 +53,5 @@ Execute the command
 
 ##### Parameters
 * `url` - **Required.** Page URL.
-* `options.internalRegex` - String/Regex. Identify scripts as Internal based on RegExp *(Default: null)*
+* `options.internalPattern` - String/Regex. Identify scripts as Internal based on RegExp *(Default: null)*
 * `options.mimeTypes` - Array of String/RegExp. File types to be matched *(Default: 'javascript')*

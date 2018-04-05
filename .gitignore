@@ -1,3 +1,6 @@
+prometheus/config.yml
+prometheus/data
+
 # Logs
 logs
 *.log
