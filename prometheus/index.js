@@ -2,9 +2,10 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const Cache = require('ttl-cache');
-const run = require('..');
 const promClient = require('prom-client');
 const YAML = require('yamljs');
+const { assign, fromPairs, isArray } = require('lodash');
+const run = require('..');
 
 let config = {};
 try {
@@ -23,6 +24,12 @@ const cache = new Cache({
 });
 
 let running = false;
+
+function parseLabelsParam(arr) {
+  return isArray(arr) && arr.length
+    ? fromPairs(arr.map(l => l.split(':'))) || {}
+    : {};
+}
 
 app.get('/metrics', (() => {
   const metricName = process.env.ASSETS_METRIC_NAME || 'puppeteer_assets';
@@ -93,11 +100,17 @@ app.get('/metrics', (() => {
   };
 
   async function middleware(req, res, next) {
-    const { url, ...qsOptions } = req.query;
+    const { url, labels = [], ...qsOptions } = req.query;
     const pageUrl = url || config.url;
+    const customLabels = assign(parseLabelsParam(labels), config.labels);
     const options = { ...qsOptions, ...config.options };
 
-    console.log('GET', pageUrl, options);
+    console.info(
+      'GET',
+      pageUrl,
+      options,
+      cache.get(pageUrl) ? '[ready]' : '[pending]',
+    );
 
     if (!pageUrl) {
       res.status(400).send('No Page URL defined');
@@ -105,6 +118,8 @@ app.get('/metrics', (() => {
     }
 
     res.writeHead(200, { 'Content-Type': 'text/plain' });
+
+    promClient.register.setDefaultLabels(customLabels);
 
     try {
       await configureMetric(pageUrl, options);

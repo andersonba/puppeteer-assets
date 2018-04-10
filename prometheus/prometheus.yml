@@ -19,9 +19,11 @@ scrape_configs:
       - www.jusbrasil.com.br/home
     internalPattern:
       - az.jusbr.com
+    labels:
+      - 'site:jusbrasil'
+      - 'app:home'
   static_configs:
-  - targets:
-    - server:3000
+  - targets: ['server:3000']
 - job_name: news
   scrape_interval: 1d
   scrape_timeout: 15s
@@ -32,6 +34,8 @@ scrape_configs:
       - jusbrasil.jusbrasil.com.br/artigos/268539228/slug
     internalPattern:
       - az.jusbr.com
+    labels:
+      - 'site:jusbrasil'
+      - 'app:news'
   static_configs:
-  - targets:
-    - server:3000
+  - targets: ['server:3000']

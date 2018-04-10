@@ -1,4 +1,7 @@
 url: www.yoursite.com
+labels:
+  section: home
+  label: value
 options:
   internalPattern: mycdn.com
   mimeTypes:
