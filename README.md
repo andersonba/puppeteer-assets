@@ -7,7 +7,7 @@ Want to know which scripts are loaded in your page? This module allows you to ex
 
 ## Set up
 ```bash
-yarn add puppeteer-assets
+npm install puppeteer-assets
 ```
 
 ## Usage
