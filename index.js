@@ -1,10 +1,10 @@
 const puppeteer = require('puppeteer');
 const { get } = require('lodash');
 
+const IGNORE_ASSET_REGEX = /(^data:)/;
+
 function sanitizeUrl(url) {
-  if (!/^(?:f|ht)tps?:\/\//.test(url)) {
-    return `https://${url}`;
-  }
+  if (!/^(?:f|ht)tps?:\/\//.test(url)) return `https://${url}`;
   return url;
 }
 
@@ -12,7 +12,9 @@ async function run(plainUrl, options = {}) {
   const pageUrl = sanitizeUrl(plainUrl);
   const { mimeTypes = ['javascript'], internalPattern } = options;
 
+  // --- Prepare Browser ---
   const browser = await puppeteer.launch({
+    headless: true,
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
   });
   const page = await browser.newPage();
@@ -25,14 +27,16 @@ async function run(plainUrl, options = {}) {
     responses[event.requestId] = event.response;
   });
 
+  // --- Listen and count assets -
   const assets = {};
   session.on('Network.dataReceived', (event) => {
     const { url, mimeType } = responses[event.requestId];
-    const mimeTypeMatched = mimeTypes
-      .map((type) => new RegExp(type).test(mimeType))
-      .every((b) => b);
 
-    if (url.startsWith('data:') || !mimeTypeMatched) {
+    // should ignore asset?
+    if (
+      IGNORE_ASSET_REGEX.test(url)
+      || mimeTypes.some((type) => !new RegExp(type).test(mimeType))
+    ) {
       return;
     }
 
@@ -47,31 +51,35 @@ async function run(plainUrl, options = {}) {
     };
   });
 
+  // --- Opening URL ---
   await page.goto(pageUrl, {
     waitUntil: 'networkidle0',
   });
 
   await browser.close();
 
-  let totalLength = 0;
-  let totalEncodedLength = 0;
+  // --- Generating report ---
+  const output = {
+    assets,
+    count: 0,
+    internalCount: 0,
+    externalCount: 0,
+    totalLength: 0,
+    totalEncodedLength: 0,
+  };
+
   Object.values(assets).forEach((asset) => {
-    totalLength += asset.length;
-    totalEncodedLength += asset.encodedLength;
+    output.count += 1;
+    output.totalLength += asset.length;
+    output.totalEncodedLength += asset.encodedLength;
+    if (asset.type === 'internal') {
+      output.internalCount += 1;
+    } else {
+      output.externalCount += 1;
+    }
   });
 
-  return {
-    assets,
-    totalLength,
-    totalEncodedLength,
-    internalCount: Object.keys(assets).filter(
-      (k) => assets[k].type === 'internal',
-    ).length,
-    externalCount: Object.keys(assets).filter(
-      (k) => assets[k].type === 'external',
-    ).length,
-    count: Object.keys(assets).length,
-  };
+  return output;
 }
 
 module.exports = run;
