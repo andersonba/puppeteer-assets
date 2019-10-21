@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 /* eslint-disable no-console */
 const { omit } = require('lodash');
-const Table = require('cli-table');
+const Table = require('cli-table3');
 const filesize = require('filesize');
 const yargs = require('yargs');
+const ora = require('ora');
 const run = require('..');
 
 require('dotenv').config();
@@ -25,11 +26,6 @@ const { argv } = yargs
     describe: 'Sets assets as internal scripts based on regex pattern',
   });
 
-const { url, ...args } = argv;
-const options = omit(args, ['help', 'version', '$0', '_']);
-
-console.log('Getting metrics...');
-
 function getLengthsByType(assets, type) {
   let len = 0;
   let enc = 0;
@@ -42,6 +38,10 @@ function getLengthsByType(assets, type) {
   return [len, enc];
 }
 
+const { url, ...args } = argv;
+const options = omit(args, ['help', 'version', '$0', '_']);
+const loading = ora('Getting metrics...').start();
+
 run(url, options)
   .then(
     ({
@@ -52,14 +52,16 @@ run(url, options)
       internalCount,
       externalCount,
     }) => {
-      const table = new Table({
-        head: ['Asset URL', 'Encoded Length', 'Length', 'MimeType', 'Type'],
-        colWidths: [70, 16, 16, 20, 10],
+      loading.stop();
+
+      const assetsTable = new Table({
+        head: ['URL', 'Encoded Length', 'Length', 'MimeType', 'Type'],
+        wordWrap: true,
       });
 
       Object.keys(assets).forEach((asset) => {
         const metrics = assets[asset];
-        table.push([
+        assetsTable.push([
           asset,
           filesize(metrics.encodedLength),
           filesize(metrics.length),
@@ -67,10 +69,10 @@ run(url, options)
           metrics.type,
         ]);
       });
-      console.log(table.toString());
+      console.log(String(assetsTable));
 
-      const table2 = new Table({
-        head: ['', 'Internal', 'External', 'Total'],
+      const summaryTable = new Table({
+        head: ['Summary', 'Internal', 'External', 'Total'],
       });
       const [
         internalTotalLength,
@@ -80,22 +82,23 @@ run(url, options)
         externalTotalLength,
         externalTotalEncodedLength,
       ] = getLengthsByType(assets, 'external');
-      table2.push(['Count', internalCount, externalCount, count]);
-      table2.push([
+      summaryTable.push(['Count', internalCount, externalCount, count]);
+      summaryTable.push([
         'Length',
         filesize(internalTotalLength),
         filesize(externalTotalLength),
         filesize(totalLength),
       ]);
-      table2.push([
+      summaryTable.push([
         'Encoded Length',
         filesize(internalTotalEncodedLength),
         filesize(externalTotalEncodedLength),
         filesize(totalEncodedLength),
       ]);
-      console.log(table2.toString());
+      console.log(String(summaryTable));
     },
   )
   .catch((err) => {
+    loading.stop();
     console.error('Error occurred', err);
   });

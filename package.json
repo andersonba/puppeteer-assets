@@ -12,10 +12,11 @@
     "cli": "node ./bin/cli"
   },
   "dependencies": {
-    "cli-table": "^0.3.1",
+    "cli-table3": "^0.5.1",
     "dotenv": "^8.2.0",
     "filesize": "^5.0.3",
     "lodash": "^4.17.15",
+    "ora": "^4.0.2",
     "puppeteer": "^1.20.0",
     "yargs": "^14.2.0"
   },
