@@ -8,7 +8,7 @@
   "author": "Anderson de Oliveira",
   "license": "MIT",
   "scripts": {
-    "lint": "eslint index bin prometheus",
+    "lint": "eslint .",
     "cli": "node ./bin/cli"
   },
   "dependencies": {

@@ -10,10 +10,7 @@ function sanitizeUrl(url) {
 
 async function run(plainUrl, options = {}) {
   const pageUrl = sanitizeUrl(plainUrl);
-  const {
-    mimeTypes = ['javascript'],
-    internalPattern,
-  } = options;
+  const { mimeTypes = ['javascript'], internalPattern } = options;
 
   const browser = await puppeteer.launch({
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
@@ -32,16 +29,15 @@ async function run(plainUrl, options = {}) {
   session.on('Network.dataReceived', (event) => {
     const { url, mimeType } = responses[event.requestId];
     const mimeTypeMatched = mimeTypes
-      .map(type => new RegExp(type).test(mimeType))
-      .every(b => b);
+      .map((type) => new RegExp(type).test(mimeType))
+      .every((b) => b);
 
     if (url.startsWith('data:') || !mimeTypeMatched) {
       return;
     }
 
-    const isInternal = url.startsWith(pageUrl) || (
-      internalPattern ? new RegExp(internalPattern).test(url) : false
-    );
+    const isInternal = url.startsWith(pageUrl)
+      || (internalPattern ? new RegExp(internalPattern).test(url) : false);
     const asset = assets[url];
     assets[url] = {
       mimeType,
@@ -68,8 +64,12 @@ async function run(plainUrl, options = {}) {
     assets,
     totalLength,
     totalEncodedLength,
-    internalCount: Object.keys(assets).filter(k => assets[k].type === 'internal').length,
-    externalCount: Object.keys(assets).filter(k => assets[k].type === 'external').length,
+    internalCount: Object.keys(assets).filter(
+      (k) => assets[k].type === 'internal',
+    ).length,
+    externalCount: Object.keys(assets).filter(
+      (k) => assets[k].type === 'external',
+    ).length,
     count: Object.keys(assets).length,
   };
 }
