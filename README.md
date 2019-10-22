@@ -1,22 +1,27 @@
 # Puppeteer Assets [![npm version](https://badge.fury.io/js/puppeteer-assets.svg)](https://badge.fury.io/js/puppeteer-assets) [![Build Status](https://travis-ci.org/andersonba/puppeteer-assets.svg?branch=master)](https://travis-ci.org/andersonba/puppeteer-assets)
+
 > Gets assets metrics using [Puppeteer](https://github.com/googlechrome/puppeteer).
 
 Want to know which scripts are loaded in your page? This module allows you to extract and audit the metrics.
 
-![CLI-output](resources/cli.png)
+![Gif CLI](resources/cli.gif)
 
 ## Set up
+
 ```bash
 yarn add puppeteer-assets
 ```
 
 ## Usage
+
 Using CLI
+
 ```bash
 puppeteer-assets www.google.com
 ```
 
 Using on Node.js
+
 ```javascript
 const assetsMetrics = require('puppeteer-assets');
 
@@ -49,9 +54,11 @@ docker run --name=prometheus-assets -v /tmp/config.yml:/app/prometheus/ -d -p 30
 ## Reference
 
 #### `assetsMetrics(url, options)`
+
 Execute the command
 
 ##### Parameters
-* `url` - **Required.** Page URL.
-* `options.internalPattern` - String/Regex. Identify scripts as Internal based on RegExp *(Default: null)*
-* `options.mimeTypes` - Array of String/RegExp. File types to be matched *(Default: 'javascript')*
+
+- `url` - **Required.** Page URL.
+- `options.internalPattern` - String/Regex. Identify scripts as Internal based on RegExp _(Default: null)_
+- `options.mimeTypes` - Array of String/RegExp. File types to be matched _(Default: 'javascript')_
