@@ -3,7 +3,7 @@
 REPO="andersonba/prometheus-assets"
 VERSION=$(cat package.json |json version)
 
-docker login -u $DOCKER_USER -p $DOCKER_PASS
+echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
 docker build -f prometheus/Dockerfile -t $REPO .
 docker tag $REPO "$REPO:$VERSION"
 docker push $REPO
