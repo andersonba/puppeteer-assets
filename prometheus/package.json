@@ -1,6 +1,6 @@
 {
   "name": "puppeteer-assets-prometheus",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "Puppeteer Assets for Prometheus",
   "main": "index.js",
   "author": "Anderson de Oliveira",
