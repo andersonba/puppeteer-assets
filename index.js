@@ -1,11 +1,15 @@
 const puppeteer = require('puppeteer');
-const { get } = require('lodash');
+const { get, set } = require('lodash');
 
 const IGNORE_ASSET_REGEX = /(^data:)/;
 
 function sanitizeUrl(url) {
   if (!/^(?:f|ht)tps?:\/\//.test(url)) return `https://${url}`;
   return url;
+}
+
+function incr(obj, key, val = 1) {
+  set(obj, key, val + (obj[key] || 0));
 }
 
 async function run(plainUrl, options = {}) {
@@ -46,8 +50,8 @@ async function run(plainUrl, options = {}) {
     assets[url] = {
       mimeType,
       type: isInternal ? 'internal' : 'external',
-      encodedLength: get(asset, 'encodedLength', 0) + event.encodedDataLength,
-      length: get(asset, 'length', 0) + event.dataLength,
+      encodedSize: get(asset, 'encodedSize', 0) + event.encodedDataLength,
+      size: get(asset, 'size', 0) + event.dataLength,
     };
   });
 
@@ -61,22 +65,35 @@ async function run(plainUrl, options = {}) {
   // --- Generating report ---
   const output = {
     assets,
-    count: 0,
-    internalCount: 0,
-    externalCount: 0,
-    totalLength: 0,
-    totalEncodedLength: 0,
+    count: {
+      internal: {},
+      external: {},
+    },
+    size: {
+      internal: {},
+      external: {},
+    },
+    encodedSize: {
+      internal: {},
+      external: {},
+    },
   };
 
   Object.values(assets).forEach((asset) => {
-    output.count += 1;
-    output.totalLength += asset.length;
-    output.totalEncodedLength += asset.encodedLength;
-    if (asset.type === 'internal') {
-      output.internalCount += 1;
-    } else {
-      output.externalCount += 1;
-    }
+    // count
+    incr(output.count, 'total');
+    incr(output.count[asset.type], 'total');
+    incr(output.count[asset.type], asset.mimeType);
+
+    // size
+    incr(output.size, 'total', asset.size);
+    incr(output.size[asset.type], 'total', asset.size);
+    incr(output.size[asset.type], asset.mimeType, asset.size);
+
+    // encodedSize
+    incr(output.encodedSize, 'total', asset.encodedSize);
+    incr(output.encodedSize[asset.type], 'total', asset.encodedSize);
+    incr(output.encodedSize[asset.type], asset.mimeType, asset.encodedSize);
   });
 
   return output;
