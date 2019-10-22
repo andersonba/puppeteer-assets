@@ -24,8 +24,61 @@ Using on Node.js
 
 ```javascript
 const assetsMetrics = require('puppeteer-assets');
+const metrics = await assetsMetrics('https://www.andersonba.com');
 
-const metrics = await assetsMetrics('https://www.google.com');
+// Output
+{
+  assets: {
+    'https://www.andersonba.com/scripts/main.js': {
+      mimeType: 'application/javascript',
+      type: 'internal',
+      encodedSize: 1621,
+      size: 1621
+    },
+    'https://www.andersonba.com/scripts/vendor.js': {
+      mimeType: 'application/javascript',
+      type: 'internal',
+      encodedSize: 213438,
+      size: 213438
+    },
+    'https://www.google-analytics.com/analytics.js': {
+      mimeType: 'text/javascript',
+      type: 'external',
+      encodedSize: 17821,
+      size: 44470
+    },
+    'https://www.google-analytics.com/gtm/js?id=GTM-W7LMQWK&cid=233171157.1571718357': {
+      mimeType: 'application/javascript',
+      type: 'external',
+      encodedSize: 0,
+      size: 63611
+    }
+  },
+  count: {
+    internal: { total: 2, 'application/javascript': 2 },
+    external: { total: 2, 'text/javascript': 1, 'application/javascript': 1 },
+    total: 4
+  },
+  size: {
+    internal: { total: 215059, 'application/javascript': 215059 },
+    external: {
+      total: 108081,
+      'text/javascript': 44470,
+      'application/javascript': 63611
+    },
+    total: 323140
+  },
+  encodedSize: {
+    internal: { total: 215059, 'application/javascript': 215059 },
+    external: {
+      total: 17821,
+      'text/javascript': 17821,
+      'application/javascript': 0
+    },
+    total: 232880
+  }
+}
+
 ```
 
 ## Prometheus
