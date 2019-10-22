@@ -26,18 +26,6 @@ const { argv } = yargs
     describe: 'Sets assets as internal scripts based on regex pattern',
   });
 
-function getLengthsByType(assets, type) {
-  let len = 0;
-  let enc = 0;
-  Object.keys(assets).forEach((k) => {
-    if (type === assets[k].type) {
-      len += assets[k].length;
-      enc += assets[k].encodedLength;
-    }
-  });
-  return [len, enc];
-}
-
 const { url, ...args } = argv;
 const options = omit(args, ['help', 'version', '$0', '_']);
 const loading = ora('Getting metrics...').start();
@@ -46,16 +34,14 @@ run(url, options)
   .then(
     ({
       assets,
-      totalEncodedLength,
-      totalLength,
       count,
-      internalCount,
-      externalCount,
+      size,
+      encodedSize,
     }) => {
       loading.stop();
 
       const assetsTable = new Table({
-        head: ['URL', 'Encoded Length', 'Length', 'MimeType', 'Type'],
+        head: ['URL', 'Encoded Size', 'Size', 'Mime Type', 'Type'],
         wordWrap: true,
       });
 
@@ -63,8 +49,8 @@ run(url, options)
         const metrics = assets[asset];
         assetsTable.push([
           asset,
-          filesize(metrics.encodedLength),
-          filesize(metrics.length),
+          filesize(metrics.encodedSize),
+          filesize(metrics.size),
           metrics.mimeType,
           metrics.type,
         ]);
@@ -74,26 +60,18 @@ run(url, options)
       const summaryTable = new Table({
         head: ['Summary', 'Internal', 'External', 'Total'],
       });
-      const [
-        internalTotalLength,
-        internalTotalEncodedLength,
-      ] = getLengthsByType(assets, 'internal');
-      const [
-        externalTotalLength,
-        externalTotalEncodedLength,
-      ] = getLengthsByType(assets, 'external');
-      summaryTable.push(['Count', internalCount, externalCount, count]);
+      summaryTable.push(['Count', count.internal.total, count.external.total, count.total]);
       summaryTable.push([
-        'Length',
-        filesize(internalTotalLength),
-        filesize(externalTotalLength),
-        filesize(totalLength),
+        'Size',
+        filesize(size.internal.total),
+        filesize(size.external.total),
+        filesize(size.total),
       ]);
       summaryTable.push([
-        'Encoded Length',
-        filesize(internalTotalEncodedLength),
-        filesize(externalTotalEncodedLength),
-        filesize(totalEncodedLength),
+        'Encoded Size',
+        filesize(encodedSize.internal.total),
+        filesize(encodedSize.external.total),
+        filesize(encodedSize.total),
       ]);
       console.log(String(summaryTable));
     },
