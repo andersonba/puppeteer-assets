@@ -93,7 +93,7 @@ You can use the [official built-in server](./prometheus/README.md).
 | Parameter | Description | Type | Default |
 |-----------|-------------|------|---------|
 | `url` | **Required.** Page URL | `string`
-| `options.mimeTypes` |  MimeTypes to be filtered in the metrics. You can use mapped mimeTypes from `options.mimeTypePatterns` | `Array<RegExp | string> ` | `['javascript']`
-| `options.mimeTypePatterns` | Map the mimeTypes based on regex patterns | `Array<RegExp | string> ` | `{ javascript: ['javascript'], css: ['css'] }`
-| `options.ignorePatterns` | Ignore assets based on regex patterns | `Array<RegExp | string> ` | `[]`
-| `options.internalPatterns` | Mark asset as internal type based on regex patterns | `Array<RegExp | string> ` | `[/^(\/|.\/)/]`
+| `options.mimeTypes` |  MimeTypes to be filtered in the metrics. You can use mapped mimeTypes from `options.mimeTypePatterns` | `Array<RegExp \| string> ` | `['javascript']`
+| `options.mimeTypePatterns` | Map the mimeTypes based on regex patterns | `Array<RegExp \| string>` | `{ javascript: ['javascript'], css: ['css'] }`
+| `options.ignorePatterns` | Ignore assets based on regex patterns | `Array<RegExp \| string>` | `[]`
+| `options.internalPatterns` | Mark asset as internal type based on regex patterns | `Array<RegExp \| string>` | `[/^(\/\|.\/)/]`
