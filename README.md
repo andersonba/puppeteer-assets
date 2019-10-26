@@ -6,7 +6,7 @@ Want to know which scripts are loaded in your page? This module allows you to ex
 
 ![Gif CLI](resources/cli.gif)
 
-## Set up
+## Install
 
 ```bash
 yarn add puppeteer-assets
@@ -23,95 +23,69 @@ puppeteer-assets www.google.com
 Using on Node.js
 
 ```javascript
-const assetsMetrics = require('puppeteer-assets');
-const metrics = await assetsMetrics('https://www.andersonba.com');
+import assetsMetrics from 'puppeteer-assets';
 
-// Output
+await assetsMetrics('https://www.andersonba.com');
 {
   assets: {
     'https://www.andersonba.com/scripts/main.js': {
-      mimeType: 'application/javascript',
+      mimeType: 'javascript',
+      rawMimeType: 'application/javascript',
       type: 'internal',
-      encodedSize: 1621,
+      gzip: 1621,
       size: 1621
     },
     'https://www.andersonba.com/scripts/vendor.js': {
-      mimeType: 'application/javascript',
+      mimeType: 'javascript',
+      rawMimeType: 'application/javascript',
       type: 'internal',
-      encodedSize: 213438,
+      gzip: 213438,
       size: 213438
     },
     'https://www.google-analytics.com/analytics.js': {
-      mimeType: 'text/javascript',
+      mimeType: 'javascript',
+      rawMimeType: 'text/javascript',
       type: 'external',
-      encodedSize: 17821,
+      gzip: 0,
       size: 44470
-    },
-    'https://www.google-analytics.com/gtm/js?id=GTM-W7LMQWK&cid=233171157.1571718357': {
-      mimeType: 'application/javascript',
-      type: 'external',
-      encodedSize: 0,
-      size: 63611
     }
   },
   count: {
-    internal: { total: 2, 'application/javascript': 2 },
-    external: { total: 2, 'text/javascript': 1, 'application/javascript': 1 },
-    total: 4
+    internal: { total: 2, javascript: 2 },
+    external: { total: 1, javascript: 1 },
+    total: 3
   },
   size: {
-    internal: { total: 215059, 'application/javascript': 215059 },
-    external: {
-      total: 108081,
-      'text/javascript': 44470,
-      'application/javascript': 63611
-    },
-    total: 323140
+    internal: { total: 215059, javascript: 215059 },
+    external: { total: 44470, javascript: 44470 },
+    total: 259529
   },
-  encodedSize: {
-    internal: { total: 215059, 'application/javascript': 215059 },
-    external: {
-      total: 17821,
-      'text/javascript': 17821,
-      'application/javascript': 0
-    },
-    total: 232880
+  gzip: {
+    internal: { total: 215059, javascript: 215059 },
+    external: { total: 0, javascript: 0 },
+    total: 215059
   }
 }
-
 ```
 
 ## Prometheus
 
-Exports assets metrics via HTTP for Prometheus consumption.
+Explore and monitor your assets metrics using [Prometheus](https://prometheus.io) and [Grafana](https://grafana.com).
 
 ![Grafana](resources/grafana.png)
 
-Use [docker image](https://hub.docker.com/r/andersonba/prometheus-assets/):
+You need to configure a webservice to be the Prometheus target.
 
-```bash
-docker run --name=prometheus-assets -d -p 3000:3000 andersonba/prometheus-assets
-```
+You can use the [official built-in server](./prometheus/README.md).
 
-Now, in your Prometheus configuration ([/etc/prometheus/prometheus.yml](https://prometheus.io/docs/prometheus/latest/configuration/configuration/)), add a new target.
-
-You can monitor multiple URLs passing `params` each scrape config. [See example](prometheus/prometheus.yml#L12-L37)
-
-If you prefer use a configuration file, create a [config.yml](prometheus/config.example.yml) file. Then, run the container defining
-the volume:
-
-```bash
-docker run --name=prometheus-assets -v /tmp/config.yml:/app/prometheus/ -d -p 3000:3000 andersonba/prometheus-assets
-```
-
-## Reference
+## Reference API
 
 #### `assetsMetrics(url, options)`
 
-Execute the command
-
-##### Parameters
-
-- `url` - **Required.** Page URL.
-- `options.internalPattern` - String/Regex. Identify scripts as Internal based on RegExp _(Default: null)_
-- `options.mimeTypes` - Array of String/RegExp. File types to be matched _(Default: 'javascript')_
+| Parameter | Description | Type | Default |
+|-----------|-------------|------|---------|
+| `url` | **Required.** Page URL | `string`
+| `options.mimeTypes` |  MimeTypes to be filtered in the metrics. You can use mapped mimeTypes from `options.mimeTypePatterns` | `Array<RegExp | string> ` | `['javascript']`
+| `options.mimeTypePatterns` | Map the mimeTypes based on regex patterns | `Array<RegExp | string> ` | `{ javascript: ['javascript'], css: ['css'] }`
+| `options.ignorePatterns` | Ignore assets based on regex patterns | `Array<RegExp | string> ` | `[]`
+| `options.internalPatterns` | Mark asset as internal type based on regex patterns | `Array<RegExp | string> ` | `[/^(\/|.\/)/]`
