@@ -1,6 +1,6 @@
 # Puppeteer Assets [![npm version](https://badge.fury.io/js/puppeteer-assets.svg)](https://badge.fury.io/js/puppeteer-assets) [![Build Status](https://travis-ci.org/andersonba/puppeteer-assets.svg?branch=master)](https://travis-ci.org/andersonba/puppeteer-assets)
 
-> Gets assets metrics using [Puppeteer](https://github.com/googlechrome/puppeteer).
+> Measuring your assets with metrics using [Puppeteer](https://github.com/googlechrome/puppeteer).
 
 Want to know which scripts are loaded in your page? This module allows you to extract and audit the metrics.
 
