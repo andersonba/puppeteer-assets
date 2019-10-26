@@ -36,23 +36,24 @@ run(url, options)
       assets,
       count,
       size,
-      encodedSize,
+      gzip,
     }) => {
       loading.stop();
 
       const assetsTable = new Table({
-        head: ['URL', 'Encoded Size', 'Size', 'Mime Type', 'Type'],
+        head: ['Type', 'URL', 'Size', 'Gzip', 'MimeType', 'Raw MimeType'],
         wordWrap: true,
       });
 
       Object.keys(assets).forEach((asset) => {
         const metrics = assets[asset];
         assetsTable.push([
-          asset,
-          filesize(metrics.encodedSize),
-          filesize(metrics.size),
-          metrics.mimeType,
           metrics.type,
+          asset,
+          filesize(metrics.size),
+          filesize(metrics.gzip),
+          metrics.mimeType,
+          metrics.rawMimeType,
         ]);
       });
       console.log(String(assetsTable));
@@ -68,10 +69,10 @@ run(url, options)
         filesize(size.total),
       ]);
       summaryTable.push([
-        'Encoded Size',
-        filesize(encodedSize.internal.total),
-        filesize(encodedSize.external.total),
-        filesize(encodedSize.total),
+        'Gzip',
+        filesize(gzip.internal.total),
+        filesize(gzip.external.total),
+        filesize(gzip.total),
       ]);
       console.log(String(summaryTable));
     },
