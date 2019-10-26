@@ -20,6 +20,14 @@ Using CLI
 puppeteer-assets www.google.com
 ```
 
+Advanced usage:
+
+```bash
+puppeteer-assets www.google.com -t javascript -t css --ignore gooogle-analytics
+```
+
+Run `puppeteer-assets --help` to more options.
+
 Using on Node.js
 
 ```javascript

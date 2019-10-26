@@ -21,9 +21,15 @@ const { argv } = yargs
     describe: 'Filter assets based on mime type',
     default: ['javascript'],
   })
-  .option('internalPattern', {
+  .array('internalPatterns')
+  .option('internalPatterns', {
     alias: 'i',
-    describe: 'Sets assets as internal scripts based on regex pattern',
+    describe: 'Set assets as internal assets based on regex pattern',
+  })
+  .array('ignorePatterns')
+  .option('ignorePatterns', {
+    alias: 'ignore',
+    describe: 'Ignore assets based on regex pattern',
   });
 
 const { url, ...args } = argv;
