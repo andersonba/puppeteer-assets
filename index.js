@@ -1,20 +1,13 @@
 const puppeteer = require('puppeteer');
-const { get, set } = require('lodash');
-
-const IGNORE_ASSET_REGEX = /(^data:)/;
-
-function sanitizeUrl(url) {
-  if (!/^(?:f|ht)tps?:\/\//.test(url)) return `https://${url}`;
-  return url;
-}
-
-function incr(obj, key, val = 1) {
-  set(obj, key, val + (obj[key] || 0));
-}
+const { get, merge } = require('lodash');
+const { sanitizeUrl, incr, detectMimeType } = require('./utils');
+const constants = require('./constants');
 
 async function run(plainUrl, options = {}) {
   const pageUrl = sanitizeUrl(plainUrl);
-  const { mimeTypes = ['javascript'], internalPattern } = options;
+  const mimeTypes = options.mimeTypes || constants.defaultMimeTypes;
+  const mimeTypePatterns = merge({}, constants.defaultMimeTypePatterns, options.mimeTypePatterns);
+  const { ignorePatterns = [], internalPatterns = [] } = options;
 
   // --- Prepare Browser ---
   const browser = await puppeteer.launch({
@@ -34,23 +27,28 @@ async function run(plainUrl, options = {}) {
   // --- Listen and count assets -
   const assets = {};
   session.on('Network.dataReceived', (event) => {
-    const { url, mimeType } = responses[event.requestId];
+    const { url, mimeType: rawMimeType } = responses[event.requestId];
 
-    // should ignore asset?
     if (
-      IGNORE_ASSET_REGEX.test(url)
-      || mimeTypes.some((type) => !new RegExp(type).test(mimeType))
-    ) {
-      return;
-    }
+      constants.ignoreAssetPattern.test(url)
+      || ignorePatterns.some((p) => new RegExp(p).test(url))
+    ) return;
+
+    // check mime type based on enabled list and patterns
+    const mimeType = detectMimeType(rawMimeType, mimeTypes, mimeTypePatterns);
+    if (!mimeType) return;
 
     const isInternal = url.startsWith(pageUrl)
-      || (internalPattern ? new RegExp(internalPattern).test(url) : false);
+      || (internalPatterns.length
+        ? internalPatterns.some((p) => new RegExp(p).test(url))
+        : false);
+
     const asset = assets[url];
     assets[url] = {
       mimeType,
+      rawMimeType,
       type: isInternal ? 'internal' : 'external',
-      encodedSize: get(asset, 'encodedSize', 0) + event.encodedDataLength,
+      gzip: get(asset, 'gzip', 0) + event.encodedDataLength,
       size: get(asset, 'size', 0) + event.dataLength,
     };
   });
@@ -59,24 +57,14 @@ async function run(plainUrl, options = {}) {
   await page.goto(pageUrl, {
     waitUntil: 'networkidle0',
   });
-
   await browser.close();
 
   // --- Generating report ---
   const output = {
     assets,
-    count: {
-      internal: {},
-      external: {},
-    },
-    size: {
-      internal: {},
-      external: {},
-    },
-    encodedSize: {
-      internal: {},
-      external: {},
-    },
+    count: { internal: {}, external: {} },
+    size: { internal: {}, external: {} },
+    gzip: { internal: {}, external: {} },
   };
 
   Object.values(assets).forEach((asset) => {
@@ -90,10 +78,10 @@ async function run(plainUrl, options = {}) {
     incr(output.size[asset.type], 'total', asset.size);
     incr(output.size[asset.type], asset.mimeType, asset.size);
 
-    // encodedSize
-    incr(output.encodedSize, 'total', asset.encodedSize);
-    incr(output.encodedSize[asset.type], 'total', asset.encodedSize);
-    incr(output.encodedSize[asset.type], asset.mimeType, asset.encodedSize);
+    // gzip
+    incr(output.gzip, 'total', asset.gzip);
+    incr(output.gzip[asset.type], 'total', asset.gzip);
+    incr(output.gzip[asset.type], asset.mimeType, asset.gzip);
   });
 
   return output;
