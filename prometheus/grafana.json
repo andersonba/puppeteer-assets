@@ -55,9 +55,7 @@
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
-        "limit": 100,
         "name": "Annotations & Alerts",
-        "showIn": 0,
         "type": "dashboard"
       }
     ]
@@ -67,7 +65,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": null,
-  "iteration": 1571717384033,
+  "iteration": 1572060480973,
   "links": [],
   "panels": [
     {
@@ -85,7 +83,9 @@
       "links": [],
       "options": {
         "fieldOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "defaults": {
             "mappings": [],
             "max": 30,
@@ -132,7 +132,11 @@
       "colorPostfix": false,
       "colorPrefix": false,
       "colorValue": false,
-      "colors": ["#299c46", "rgba(237, 129, 40, 0.89)", "#d44a3a"],
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
       "datasource": "${DS_PROMETHEUS}",
       "description": "Total of internal assets",
       "format": "none",
@@ -217,6 +221,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "${DS_PROMETHEUS}",
+      "decimals": 0,
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -310,7 +315,11 @@
       "colorPostfix": false,
       "colorPrefix": false,
       "colorValue": false,
-      "colors": ["#299c46", "rgba(237, 129, 40, 0.89)", "#d44a3a"],
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
       "datasource": "${DS_PROMETHEUS}",
       "description": "Total of external assets",
       "format": "none",
@@ -402,7 +411,9 @@
       "links": [],
       "options": {
         "fieldOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "defaults": {
             "mappings": [],
             "max": 500000,
@@ -449,7 +460,11 @@
       "cacheTimeout": null,
       "colorBackground": false,
       "colorValue": false,
-      "colors": ["#299c46", "rgba(237, 129, 40, 0.89)", "#d44a3a"],
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
       "datasource": "${DS_PROMETHEUS}",
       "format": "decbytes",
       "gauge": {
@@ -630,7 +645,11 @@
       "cacheTimeout": null,
       "colorBackground": false,
       "colorValue": false,
-      "colors": ["#299c46", "rgba(237, 129, 40, 0.89)", "#d44a3a"],
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
       "datasource": "${DS_PROMETHEUS}",
       "format": "decbytes",
       "gauge": {
@@ -777,11 +796,43 @@
           "thresholds": [],
           "type": "date",
           "unit": "short"
+        },
+        {
+          "alias": "",
+          "colorMode": null,
+          "colors": [
+            "rgba(245, 54, 54, 0.9)",
+            "rgba(237, 129, 40, 0.89)",
+            "rgba(50, 172, 45, 0.97)"
+          ],
+          "dateFormat": "YYYY-MM-DD HH:mm:ss",
+          "decimals": 2,
+          "mappingType": 1,
+          "pattern": "Time",
+          "thresholds": [],
+          "type": "hidden",
+          "unit": "short"
+        },
+        {
+          "alias": "MimeType",
+          "colorMode": null,
+          "colors": [
+            "rgba(245, 54, 54, 0.9)",
+            "rgba(237, 129, 40, 0.89)",
+            "rgba(50, 172, 45, 0.97)"
+          ],
+          "dateFormat": "YYYY-MM-DD HH:mm:ss",
+          "decimals": 2,
+          "mappingType": 1,
+          "pattern": "z_mime_type",
+          "thresholds": [],
+          "type": "string",
+          "unit": "short"
         }
       ],
       "targets": [
         {
-          "expr": "sort(max(puppeteer_assets_file) by (type, url) == on() group_left max(puppeteer_assets_file))",
+          "expr": "sort(max(label_replace(puppeteer_assets_file{page=~\"$page\"}, \"z_mime_type\", \"$1\", \"mime_type\", \"(.*)\")) by (type, z_mime_type, url) == on() group_left max(puppeteer_assets_file{page=~\"$page\"}))",
           "format": "table",
           "instant": true,
           "intervalFactor": 1,
@@ -851,7 +902,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Size by mime_type",
+      "title": "Size by mimeType",
       "tooltip": {
         "shared": true,
         "sort": 2,
@@ -933,7 +984,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(puppeteer_assets_encoded_size_by_mime_type{page=~\"$page\"}) by (mime_type, type)",
+          "expr": "sum(puppeteer_assets_gzip_by_mime_type{page=~\"$page\"}) by (mime_type, type)",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{type}} {{mime_type}}",
@@ -944,7 +995,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Encoded size by mime_type",
+      "title": "Gzip by mimeType",
       "tooltip": {
         "shared": true,
         "sort": 2,
@@ -992,14 +1043,14 @@
         "allValue": null,
         "current": {},
         "datasource": "${DS_PROMETHEUS}",
-        "definition": "label_values(puppeteer_assets_count, page)",
+        "definition": "label_values(puppeteer_assets_up, page)",
         "hide": 0,
         "includeAll": false,
         "label": "Page URL",
         "multi": false,
         "name": "page",
         "options": [],
-        "query": "label_values(puppeteer_assets_count, page)",
+        "query": "label_values(puppeteer_assets_up, page)",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -1029,10 +1080,20 @@
       "2h",
       "1d"
     ],
-    "time_options": ["5m", "15m", "1h", "6h", "12h", "24h", "2d", "7d", "30d"]
+    "time_options": [
+      "5m",
+      "15m",
+      "1h",
+      "6h",
+      "12h",
+      "24h",
+      "2d",
+      "7d",
+      "30d"
+    ]
   },
   "timezone": "",
   "title": "Assets metrics",
   "uid": "000000047",
-  "version": 11
+  "version": 15
 }

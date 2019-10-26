@@ -1,0 +1,25 @@
+scrape_configs:
+  - job_name: andersonba
+    scrape_interval: 15s
+    scrape_timeout: 15s
+    metrics_path: /metrics
+    scheme: http
+    params:
+      url:
+        - www.andersonba.com
+      labels:
+        - "site:andersonba"
+    static_configs:
+      - targets: ["server:3000"]
+  - job_name: yvebot
+    scrape_interval: 20s
+    scrape_timeout: 15s
+    metrics_path: /metrics
+    scheme: http
+    params:
+      url:
+        - https://andersonba.github.io/yve-bot/
+      labels:
+        - "site:yvebot"
+    static_configs:
+      - targets: ["server:3000"]

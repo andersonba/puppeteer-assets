@@ -1,13 +1,8 @@
 scrape_configs:
-  - job_name: andersonba
-    scrape_interval: 30s
+  - job_name: assets
+    scrape_interval: 15s
     scrape_timeout: 15s
     metrics_path: /metrics
     scheme: http
-    params:
-      url:
-        - www.andersonba.com
-      labels:
-        - "site:andersonba"
     static_configs:
       - targets: ["server:3000"]

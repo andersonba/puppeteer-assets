@@ -1,15 +1,20 @@
-version: '3'
+version: "3"
+
 services:
   server:
     build:
       context: ..
       dockerfile: prometheus/Dockerfile
+    command: yarn dev
+    environment:
+      NODE_ENV: development
     ports:
       - "3000:3000"
     volumes:
       - ..:/app
       - /app/node_modules
       - /app/prometheus/node_modules
+      - ./config.example.yml:/app/config.yml
 
   prometheus:
     image: quay.io/prometheus/prometheus
@@ -25,7 +30,7 @@ services:
     volumes:
       - ./data/grafana:/var/lib/grafana
     ports:
-      - "3001:3000"
+      - "8080:3000"
 
 volumes:
   prometheus.yml:

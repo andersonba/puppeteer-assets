@@ -1,9 +1,44 @@
-url: www.yoursite.com
+path: /metrics
+metricName: puppeteer_assets
+enableOnDemandQuery: true
 labels:
-  section: home
-  label: value
-options:
-  internalPattern: mycdn.com
+  - site
+interval: 60000
+defaults:
+  metrics:
+    file: true
+    count: true
+    size: true
+    gzip: true
+    countByMimeType: true
+    sizeByMimeType: true
+    gzipByMimeType: true
   mimeTypes:
     - javascript
-    - css
+  mimeTypesPatterns:
+    javascript:
+      - javascript
+    css:
+      - css
+  internalPatterns:
+    - ^(\/|.\/)
+configurations:
+  - url: www.andersonba.com
+    labels:
+      site: andersonba
+      unknown: ignore
+    internalPatterns:
+      - cdn.google.com
+    mimeTypes:
+      - javascript
+      - css
+  - url: https://andersonba.github.io/yve-bot/
+    labels:
+      site: yvebot
+    internalPatterns:
+      - cdn.andersonba.com
+    mimeTypes:
+      - javascript
+    mimeTypesPatterns:
+      javascript:
+        - text/javascript

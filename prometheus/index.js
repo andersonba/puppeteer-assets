@@ -1,199 +1,276 @@
 /* eslint-disable no-console */
 const express = require('express');
 const bodyParser = require('body-parser');
-const Cache = require('ttl-cache');
 const promClient = require('prom-client');
-const YAML = require('yamljs');
-const { assign, fromPairs, isArray } = require('lodash');
-const run = require('..');
+const { get } = require('lodash');
+const { env, parseLabelsParam, parseMimeTypesParam } = require('./utils');
+const Store = require('./store');
+const Settings = require('./settings');
+const constants = require('../constants');
+const getMetrics = require('..');
 
-let config = {};
-try {
-  config = YAML.load(`${__dirname}/config.yml`) || {};
-  console.info('Using configuration file');
-} catch (e) {
-  // pass
-}
-
+const store = new Store();
 const app = express();
+
 app.use(bodyParser.json());
 
-const cache = new Cache({
-  ttl: process.env.CACHE_TTL || 300, // seconds
-  interval: process.env.CACHE_INTERVAL || 60, // seconds,
-});
-
-let running = false;
-
-function parseLabelsParam(arr) {
-  return isArray(arr) && arr.length
-    ? fromPairs(arr.map((l) => l.split(':'))) || {}
-    : {};
+function conf(key, config) {
+  return get(config, key, get(Settings.defaults, key));
 }
 
-function iterateToGauge(metrics, field, gauge, page) {
+function iterateToGauge(metrics, field, gauge, config) {
+  const { url: page, labels } = config;
   Object.entries(metrics[field]).forEach(([type, data]) => {
     if (type === 'total') return;
     Object.entries(data).forEach(([mimeType, value]) => {
       if (mimeType === 'total') {
-        gauge.set({ page, type }, value);
+        gauge.set({ page, type, ...labels }, value);
       }
     });
   });
 }
 
-function iterateToGaugeByMimeType(metrics, field, gauge, page) {
+function iterateToGaugeByMimeType(metrics, field, gauge, config) {
+  const { url: page, labels } = config;
+  const mimeTypes = conf('mimeTypes', config);
   Object.entries(metrics[field]).forEach(([type, data]) => {
     if (type === 'total') return;
-    Object.entries(data).forEach(([mimeType, value]) => {
-      if (mimeType === 'total') return;
-      gauge.set({ page, type, mime_type: mimeType }, value);
+    mimeTypes.forEach((mimeType) => {
+      gauge.set({
+        page, type, mime_type: mimeType, ...labels,
+      }, data[mimeType] || 0);
     });
   });
 }
 
-app.get(
-  '/metrics',
-  (() => {
-    const metricName = process.env.ASSETS_METRIC_NAME || 'puppeteer_assets';
+function stripInvalidLabels(labelKeys, config) {
+  const labels = labelKeys.reduce((acc, key) => {
+    const value = conf('labels', config)[key];
+    acc[key] = value || null;
+    return acc;
+  }, {});
+  return { ...config, labels };
+}
 
-    new promClient.Gauge({
-      name: 'up',
-      help: '1 = up, 0 = not up',
-    }).set(1);
+function registerMetrics(metrics, config, {
+  gaugeFile,
+  gaugeCount,
+  gaugeSize,
+  gaugeGzip,
+  gaugeCountByMimeType,
+  gaugeSizeByMimeType,
+  gaugeGzipByMimeType,
+}) {
+  const labels = conf('labels', config);
 
-    const gaugeFile = new promClient.Gauge({
+  promClient.register.setDefaultLabels(labels);
+
+  if (conf('metrics.file', config)) {
+    // file metrics
+    const ts = Date.now();
+    Object.entries(metrics.assets).forEach(([url, data]) => {
+      const { type, mimeType } = data;
+      gaugeFile.set(
+        {
+          page: config.url,
+          url,
+          type,
+          mime_type: mimeType,
+        },
+        ts,
+      );
+    });
+  }
+
+  // default
+  if (conf('metrics.count', config)) {
+    iterateToGauge(metrics, 'count', gaugeCount, config);
+  }
+  if (conf('metrics.size', config)) {
+    iterateToGauge(metrics, 'size', gaugeSize, config);
+  }
+  if (conf('metrics.gzip', config)) {
+    iterateToGauge(metrics, 'gzip', gaugeGzip, config);
+  }
+
+  // by mime type
+  if (conf('metrics.countByMimeType', config)) {
+    iterateToGaugeByMimeType(metrics, 'count', gaugeCountByMimeType, config);
+  }
+  if (conf('metrics.sizeByMimeType', config)) {
+    iterateToGaugeByMimeType(metrics, 'size', gaugeSizeByMimeType, config);
+  }
+  if (conf('metrics.gzipByMimeType', config)) {
+    iterateToGaugeByMimeType(metrics, 'gzip', gaugeGzipByMimeType, config);
+  }
+}
+
+function setupMetrics(configurations, overrideSettings = {}) {
+  const { metricName, labels: labelKeys } = { ...Settings, ...overrideSettings };
+
+  promClient.register.clear();
+
+  const gaugeUp = new promClient.Gauge({
+    name: `${metricName}_up`,
+    help: '1 = up, 0 = not up',
+    labelNames: ['page', ...labelKeys],
+  });
+
+  const gaugeFile = conf('metrics.file')
+    ? new promClient.Gauge({
       name: `${metricName}_file`,
       help: 'historically found assets on scrap',
-      labelNames: ['page', 'type', 'mime_type', 'url'],
-    });
+      labelNames: ['page', 'type', 'mime_type', 'url', ...labelKeys],
+    })
+    : null;
 
-    const gaugeCount = new promClient.Gauge({
+  const gaugeCount = conf('metrics.count')
+    ? new promClient.Gauge({
       name: `${metricName}_count`,
       help: 'count of internal assets',
-      labelNames: ['page', 'type'],
-    });
+      labelNames: ['page', 'type', ...labelKeys],
+    })
+    : null;
 
-    const gaugeSize = new promClient.Gauge({
+  const gaugeSize = conf('metrics.size')
+    ? new promClient.Gauge({
       name: `${metricName}_size`,
       help: 'real size of assets',
-      labelNames: ['page', 'type'],
-    });
+      labelNames: ['page', 'type', ...labelKeys],
+    })
+    : null;
 
-    const gaugeEncodedSize = new promClient.Gauge({
-      name: `${metricName}_encoded_size`,
+  const gaugeGzip = conf('metrics.gzip')
+    ? new promClient.Gauge({
+      name: `${metricName}_gzip`,
       help: 'encoded (gzip) size of assets',
-      labelNames: ['page', 'type'],
-    });
+      labelNames: ['page', 'type', ...labelKeys],
+    })
+    : null;
 
-    const gaugeCountByMimeType = new promClient.Gauge({
+  const gaugeCountByMimeType = conf('metrics.countByMimeType')
+    ? new promClient.Gauge({
       name: `${metricName}_count_by_mime_type`,
       help: 'count of internal assets by mime type',
-      labelNames: ['page', 'type', 'mime_type'],
-    });
+      labelNames: ['page', 'type', 'mime_type', ...labelKeys],
+    })
+    : null;
 
-    const gaugeSizeByMimeType = new promClient.Gauge({
+  const gaugeSizeByMimeType = conf('metrics.sizeByMimeType')
+    ? new promClient.Gauge({
       name: `${metricName}_size_by_mime_type`,
       help: 'real size of assets by mime type',
-      labelNames: ['page', 'type', 'mime_type'],
-    });
+      labelNames: ['page', 'type', 'mime_type', ...labelKeys],
+    })
+    : null;
 
-    const gaugeEncodedSizeByMimeType = new promClient.Gauge({
-      name: `${metricName}_encoded_size_by_mime_type`,
+  const gaugeGzipByMimeType = conf('metrics.gzipByMimeType')
+    ? new promClient.Gauge({
+      name: `${metricName}_gzip_by_mime_type`,
       help: 'encoded (gzip) size of assets by mime type',
-      labelNames: ['page', 'type', 'mime_type'],
-    });
+      labelNames: ['page', 'type', 'mime_type', ...labelKeys],
+    })
+    : null;
 
-    const configureMetrics = async (page, options) => {
-      let metrics = cache.get(page);
+  configurations.forEach((rawConfig) => {
+    const config = stripInvalidLabels(labelKeys, rawConfig);
+    const metrics = store.get(config.url);
 
-      if (!metrics) {
-        if (!running) {
-          running = true;
+    gaugeUp.set({
+      page: config.url,
+      ...conf('labels', config),
+    }, metrics ? 1 : 0);
 
-          try {
-            metrics = await run(page, options);
-          } catch (e) {
-            console.error(e);
-          }
-
-          running = false;
-          cache.set(page, metrics);
-        } else {
-          return;
-        }
-      }
-
-      const ts = Date.now();
-      Object.entries(metrics.assets).forEach(([url, data]) => {
-        const { type, mimeType } = data;
-        gaugeFile.set(
-          {
-            page,
-            url,
-            type,
-            mime_type: mimeType,
-          },
-          ts,
-        );
+    if (metrics) {
+      registerMetrics(metrics, config, {
+        gaugeFile,
+        gaugeCount,
+        gaugeSize,
+        gaugeGzip,
+        gaugeCountByMimeType,
+        gaugeSizeByMimeType,
+        gaugeGzipByMimeType,
       });
-
-      // default
-      iterateToGauge(metrics, 'count', gaugeCount, page);
-      iterateToGauge(metrics, 'size', gaugeSize, page);
-      iterateToGauge(metrics, 'encodedSize', gaugeEncodedSize, page);
-
-      // by mime type
-      iterateToGaugeByMimeType(metrics, 'count', gaugeCountByMimeType, page);
-      iterateToGaugeByMimeType(metrics, 'size', gaugeSizeByMimeType, page);
-      iterateToGaugeByMimeType(
-        metrics,
-        'encodedSize',
-        gaugeEncodedSizeByMimeType,
-        page,
-      );
-    };
-
-    async function middleware(req, res, next) {
-      const { url, labels = [], ...qsOptions } = req.query;
-      const page = url || config.url;
-      const customLabels = assign(parseLabelsParam(labels), config.labels);
-      const options = { ...qsOptions, ...config.options };
-
-      console.info(
-        'GET',
-        page,
-        options,
-        cache.get(page) ? '[cached]' : '[not-cached]',
-      );
-
-      if (!page) {
-        res.status(400).send('No Page URL defined');
-        return;
-      }
-
-      res.writeHead(200, { 'Content-Type': 'text/plain' });
-
-      promClient.register.setDefaultLabels(customLabels);
-
-      try {
-        await configureMetrics(page, options);
-      } catch (e) {
-        console.error(e);
-      }
-
-      res.end(promClient.register.metrics());
-      next();
+      return true;
     }
+    return false;
+  });
+}
 
-    return middleware;
-  })(),
-);
+function configureTimer() {
+  if (!Settings.configurations.length) return;
 
-const server = app.listen(process.env.PORT || 3000, () => {
-  console.log('Server listening on port %d', server.address().port);
-
-  if (Object.keys(config).length) {
-    console.log('Configuration file:', config);
+  async function execute() {
+    store.busy = true;
+    await Promise.all(
+      Settings.configurations.map(async (config) => {
+        const metrics = await getMetrics(config.url, config);
+        if (metrics) store.set(config.url, metrics);
+      }),
+    );
+    store.busy = false;
   }
+
+  execute();
+
+  setInterval(async () => {
+    console.info('> timer: scraping pages...');
+    await execute();
+    console.info('> timer: done...');
+  }, Settings.interval);
+}
+
+function assertRouting(req) {
+  if (req.query.url) {
+    if (!Settings.enableOnDemandQuery) {
+      throw new Error('On Demand is disabled');
+    }
+  } else if (Settings.enableOnDemandQuery && !Settings.configurations.length) {
+    throw new Error('No URL query argument');
+  } else if (!Settings.configurations.length) {
+    throw new Error('No configurations');
+  }
+}
+
+app.get(Settings.path, async (req, res, next) => {
+  try {
+    assertRouting(req);
+  } catch (err) {
+    res.status(400).send(err.message);
+    return;
+  }
+
+  // on demand query
+  try {
+    if (req.query.url) {
+      console.log('> Requesting on-demand:', req.query.url);
+      if (store.busy) throw new Error('Ops.. Busy service!');
+
+      const config = { ...Settings.defaults };
+      config.url = req.query.url;
+      config.labels = parseLabelsParam(req.query.labels || []);
+      config.mimeTypes = parseMimeTypesParam(req.query.mimeTypes || constants.defaultMimeTypes);
+
+      const metrics = await getMetrics(config.url, config);
+      store.set(config.url, metrics);
+
+      const overrideSettings = { labels: Object.keys(config.labels) };
+      setupMetrics([config], overrideSettings);
+    } else {
+      console.log('> Requesting metrics');
+      setupMetrics(Settings.configurations);
+    }
+  } catch (err) {
+    res.status(500).send(`ERROR: ${err.message}`);
+    throw err;
+  }
+
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end(promClient.register.metrics());
+  next();
+});
+
+const server = app.listen(env('PORT', 3000), () => {
+  configureTimer();
+  console.log('Server listening on port %d', server.address().port);
 });
