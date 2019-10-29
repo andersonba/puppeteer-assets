@@ -1,5 +1,6 @@
 const puppeteer = require('puppeteer');
-const { get, merge } = require('lodash');
+const { get, merge, isArray } = require('lodash');
+const cookie = require('cookie');
 const { sanitizeUrl, incr, detectMimeType } = require('./utils');
 const constants = require('./constants');
 
@@ -54,9 +55,15 @@ async function run(plainUrl, options = {}) {
   });
 
   // --- Opening URL ---
-  await page.goto(pageUrl, {
-    waitUntil: 'networkidle0',
-  });
+  if (isArray(options.cookies)) {
+    await page.setCookie(...options.cookies.map((str) => {
+      const parsed = cookie.parse(str);
+      if (!parsed.name) throw new Error(`Missing "name" value from cookie: ${str}`);
+      if (!parsed.value) throw new Error(`Missing "value" value from cookie: ${str}`);
+      return parsed;
+    }));
+  }
+  await page.goto(pageUrl, { waitUntil: 'networkidle0' });
   await browser.close();
 
   // --- Generating report ---

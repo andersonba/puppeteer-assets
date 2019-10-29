@@ -8,5 +8,12 @@ module.exports = {
 
   ignoreAssetPattern: /(^data:)/,
 
-  arrayParams: ['labels', 'internalPatterns', 'mimeTypes', 'mimeTypePatterns', 'ignorePatterns'],
+  arrayParams: [
+    'labels',
+    'internalPatterns',
+    'mimeTypes',
+    'mimeTypePatterns',
+    'ignorePatterns',
+    'cookies',
+  ],
 };

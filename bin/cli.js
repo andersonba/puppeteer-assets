@@ -30,6 +30,12 @@ const { argv } = yargs
   .option('ignorePatterns', {
     alias: 'ignore',
     describe: 'Ignore assets based on regex pattern',
+  })
+  .option('cookies', {
+    array: true,
+    alias: 'c',
+    describe: 'Set cookies before open page',
+    type: 'string',
   });
 
 const { url, ...args } = argv;
