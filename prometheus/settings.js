@@ -1,16 +1,18 @@
 /* eslint-disable no-console */
 const yamlJs = require('yamljs');
 const { merge } = require('lodash');
-const { env, envArray, envBool } = require('./utils');
 const constants = require('../constants');
+const {
+  env, envArray, envBool, envInt,
+} = require('./utils');
 
 let settings = {
   path: env('METRICS_PATH', '/metrics'),
   metricName: env('METRIC_NAME', 'puppeteer_assets'),
   enableOnDemandQuery: envBool('METRICS_ON_DEMAND_QUERY', false),
-  onDemandQueryCacheTTL: env('METRICS_ON_DEMAND_QUERY_CACHE_TTL', 300),
+  onDemandQueryCacheTTL: envInt('METRICS_ON_DEMAND_QUERY_CACHE_TTL', 300),
   labels: envArray('METRICS_LABELS', []),
-  interval: env('METRICS_INTERVAL', 60 * 60 * 1000),
+  interval: envInt('METRICS_INTERVAL', 60 * 60 * 1000),
   defaults: {
     metrics: {
       file: envBool('METRICS_FILE_ENABLED', true),

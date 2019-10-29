@@ -14,6 +14,11 @@ function envBool(key, otherwise = false) {
   return env(key) === 'true';
 }
 
+function envInt(key, otherwise = false) {
+  if (env(key) === undefined) return otherwise;
+  return Number(env(key));
+}
+
 function parseLabelsParam(arr) {
   return isArray(arr) && arr.length
     ? fromPairs(arr.map((l) => l.split(':'))) || {}
@@ -28,6 +33,7 @@ module.exports = {
   env,
   envArray,
   envBool,
+  envInt,
   parseLabelsParam,
   parseMimeTypesParam,
 };
