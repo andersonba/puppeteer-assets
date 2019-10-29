@@ -283,6 +283,11 @@ app.get(Settings.path, async (req, res, next) => {
 
 app.get('/check', (_, res) => res.send('OK'));
 
+app.delete('/cache', (_, res) => {
+  store.clear();
+  res.send('Cache cleared!');
+});
+
 const server = app.listen(env('PORT', 3000), () => {
   configureTimer();
   console.log('Server listening on port %d', server.address().port);

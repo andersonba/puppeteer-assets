@@ -18,6 +18,11 @@ class Store {
   get(key) {
     return this.cache.get(key) || this.data[key];
   }
+
+  clear() {
+    this.data = {};
+    this.cache.flush();
+  }
 }
 
 module.exports = Store;
