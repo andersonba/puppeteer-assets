@@ -70,12 +70,16 @@ function registerMetrics(metrics, config, {
     // file metrics
     const ts = Date.now();
     Object.entries(metrics.assets).forEach(([url, data]) => {
-      const { type, mimeType } = data;
+      const {
+        type, mimeType, size, gzip,
+      } = data;
       gaugeFile.set(
         {
           page: config.url,
           url,
           type,
+          size,
+          gzip,
           mime_type: mimeType,
         },
         ts,
@@ -121,7 +125,7 @@ function setupMetrics(configurations, overrideSettings = {}) {
     ? new promClient.Gauge({
       name: `${metricName}_file`,
       help: 'historically found assets on scrap',
-      labelNames: ['page', 'type', 'mime_type', 'url', ...labelKeys],
+      labelNames: ['page', 'type', 'mime_type', 'size', 'gzip', 'url', ...labelKeys],
     })
     : null;
 
