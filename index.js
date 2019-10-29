@@ -27,6 +27,13 @@ async function run(plainUrl, options = {}) {
 
   // --- Listen and count assets -
   const assets = {};
+  session.on('Network.loadingFinished', (event) => {
+    const { url } = responses[event.requestId];
+    const asset = assets[url];
+    if (!asset) return;
+    assets[url].gzip = event.encodedDataLength;
+  });
+
   session.on('Network.dataReceived', (event) => {
     const { url, mimeType: rawMimeType } = responses[event.requestId];
 
@@ -49,7 +56,6 @@ async function run(plainUrl, options = {}) {
       mimeType,
       rawMimeType,
       type: isInternal ? 'internal' : 'external',
-      gzip: get(asset, 'gzip', 0) + event.encodedDataLength,
       size: get(asset, 'size', 0) + event.dataLength,
     };
   });
