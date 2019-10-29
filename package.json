@@ -18,11 +18,11 @@
     "filesize": "^5.0.3",
     "lodash": "^4.17.15",
     "ora": "^4.0.2",
-    "puppeteer": "^1.20.0",
+    "puppeteer": "^2.0.0",
     "yargs": "^14.2.0"
   },
   "devDependencies": {
-    "eslint": "^6.5.1",
+    "eslint": "^6.6.0",
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-import": "^2.18.2"
   }
