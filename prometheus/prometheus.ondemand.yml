@@ -21,5 +21,7 @@ scrape_configs:
         - https://andersonba.github.io/yve-bot/
       labels:
         - "site:yvebot"
+      cookies:
+        - "name=my_cookie;value=123"
     static_configs:
       - targets: ["server:3000"]
