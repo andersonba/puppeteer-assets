@@ -1,15 +1,22 @@
+const Cache = require('ttl-cache');
+
 class Store {
-  constructor() {
+  constructor({ cacheTTL }) {
     this.data = {};
     this.busy = false;
+    this.cache = new Cache({ ttl: cacheTTL });
   }
 
-  set(key, value) {
-    this.data[key] = value;
+  set(key, value, expire = false) {
+    if (expire) {
+      this.cache.set(key, value);
+    } else {
+      this.data[key] = value;
+    }
   }
 
   get(key) {
-    return this.data[key];
+    return this.cache.get(key) || this.data[key];
   }
 }
 

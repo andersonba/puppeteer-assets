@@ -1878,6 +1878,7 @@ touch@^3.1.0:
 ttl-cache@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/ttl-cache/-/ttl-cache-1.0.2.tgz#499596d83e090a9ae77271161adcf8482ae4358b"
+  integrity sha1-SZWW2D4JCprncnEWGtz4SCrkNYs=
 
 type-is@~1.6.17, type-is@~1.6.18:
   version "1.6.18"

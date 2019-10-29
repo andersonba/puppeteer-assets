@@ -25,6 +25,27 @@ Now, you should import the [dashboard template](./grafana.json) to Grafana, see 
 
 There are two ways to configure the server:
 
+### Using multiples targets in Prometheus (On-demand)
+
+The server have a route to scrap the page and extract the metrics on demand.
+
+```
+$ curl http://localhost:3000/metrics?url=www.andersonba.com
+```
+
+Nice! Now you have to configure the targets in your [prometheus.yml](https://prometheus.io/docs/prometheus/latest/configuration/configuration/). [See example](./prometheus.ondemand.yml#L2-L25)
+
+The metrics of each URL are stored in the cache for **300** seconds, check the `onDemandQueryCacheTTL` configuration to change it.
+
+#### URL params
+
+| URL Param | Description | Type | Example |
+|-----------|-------------|------|---------|
+| `url` | **Required**. Page URL | `string` | `?url=google.com`
+| `labels[]` | List of `key:value` labels | `Array<string>` | `?labels[]=page:anderson&labels[]=section:home`
+| `mimeTypes[]` | List of mimeTypes to be filtered | `Array<string>` | `?mimeTypes[]=javascript&mimeTypes[]=css`
+| `nocache`| Force scrap without cache | `boolean` | `?nocache=1`
+
 ### Using a configuration file (Job scheduler)
 
 If you don't prefer to put many targets in your prometheus configuration, you can configure a time-based job scheduler in the server. You just need to create a configuration file called `config.yml`. [See example](config.example.yml)
@@ -40,7 +61,8 @@ The server will scrap the pages every `1h`, but you can change it. [See configur
 | `labels` | List of common label names used in all page configurations | `Array<string>`
 | `defaults` | Default values for the configuration objects | `{[configurationKey: string]: configurationValue}`
 | `metricName` | Metric name used by Gauge collector. | string
-| `enableOnDemandQuery` | Also enable on-demand scrapping (using query params, see below) | boolean
+| `enableOnDemandQuery` | Also enable on-demand scrapping (using query params, see below) | `boolean`
+| `onDemandQueryCacheTTL` | Time to expire cached metrics for on-deamand scraping | `number`
 | `path` | Change the metrics path of the server | string
 
 #### Configuration spec
@@ -59,32 +81,13 @@ In addition to the [options of scraper](../README.md#reference-api), there are s
 
 See more details in [example](./config.example.yml).
 
-### Using multiples targets in Prometheus (On-demand)
-
-The server have a route to scrap the page and extract the metrics on demand.
-
-```
-$ curl http://localhost:3000/metrics?url=www.andersonba.com
-```
-
-Nice! Now you have to configure the targets in your [prometheus.yml](https://prometheus.io/docs/prometheus/latest/configuration/configuration/). [See example](./prometheus.ondemand.yml#L2-L25)
-
-Be careful about the amount of targets you set, since the on-demand is synchronous. If you want to monitor multiple sites, use the first approach.
-
-#### URL params
-
-| URL Param | Description | Type | Example |
-|-----------|-------------|------|---------|
-| `url` | **Required**. Page URL | `string` | `?url=google.com`
-| `labels[]` | List of `key:value` labels | `Array<string>` | `?labels[]=page:anderson&labels[]=section:home`
-| `mimeTypes[]` | List of mimeTypes to be filtered | `Array<string>` | `?mimeTypes[]=javascript&mimeTypes[]=css`
-
 ### Docker environments
 
 - `CONFIG_PATH`
 - `METRICS_PATH`
 - `METRIC_NAME`
 - `METRICS_ON_DEMAND_QUERY`
+- `METRICS_ON_DEMAND_QUERY_CACHE_TTL`
 - `METRICS_INTERVAL`
 - `METRICS_FILE_ENABLED`
 - `METRICS_COUNT_ENABLED`

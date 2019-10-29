@@ -8,6 +8,7 @@ let settings = {
   path: env('METRICS_PATH', '/metrics'),
   metricName: env('METRIC_NAME', 'puppeteer_assets'),
   enableOnDemandQuery: envBool('METRICS_ON_DEMAND_QUERY', false),
+  onDemandQueryCacheTTL: env('METRICS_ON_DEMAND_QUERY_CACHE_TTL', 300),
   labels: envArray('METRICS_LABELS', []),
   interval: env('METRICS_INTERVAL', 60 * 60 * 1000),
   defaults: {

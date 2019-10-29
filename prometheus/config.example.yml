@@ -1,6 +1,7 @@
 path: /metrics
 metricName: puppeteer_assets
 enableOnDemandQuery: true
+onDemandQueryCacheTTL: 300
 labels:
   - site
 interval: 60000

@@ -9,7 +9,9 @@ const Settings = require('./settings');
 const constants = require('../constants');
 const getMetrics = require('..');
 
-const store = new Store();
+const store = new Store({
+  cacheTTL: Settings.onDemandQueryCacheTTL,
+});
 const app = express();
 
 app.use(bodyParser.json());
@@ -240,19 +242,23 @@ app.get(Settings.path, async (req, res, next) => {
     return;
   }
 
-  // on demand query
   try {
+    // on demand query
     if (req.query.url) {
-      console.log('> Requesting on-demand:', req.query.url);
-      if (store.busy) throw new Error('Ops.. Busy service!');
+      const cached = store.get(req.query.url) && !req.query.nocache;
+      console.log('> Requesting on-demand:', req.query.url, cached ? '[cache]' : '');
+
+      if (!cached && store.busy) throw new Error('Ops.. Busy service!');
 
       const config = { ...Settings.defaults };
       config.url = req.query.url;
       config.labels = parseLabelsParam(req.query.labels || []);
       config.mimeTypes = parseMimeTypesParam(req.query.mimeTypes || constants.defaultMimeTypes);
 
-      const metrics = await getMetrics(config.url, config);
-      store.set(config.url, metrics);
+      if (!cached) {
+        const metrics = await getMetrics(config.url, config);
+        store.set(config.url, metrics, true);
+      }
 
       const overrideSettings = { labels: Object.keys(config.labels) };
       setupMetrics([config], overrideSettings);
