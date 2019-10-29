@@ -3,11 +3,10 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const promClient = require('prom-client');
 const { get } = require('lodash');
-const { env, parseLabelsParam, parseMimeTypesParam } = require('./utils');
 const Store = require('./store');
 const Settings = require('./settings');
-const constants = require('../constants');
 const getMetrics = require('..');
+const { env, parseLabelsParam } = require('./utils');
 
 const store = new Store({
   cacheTTL: Settings.onDemandQueryCacheTTL,
@@ -250,10 +249,9 @@ app.get(Settings.path, async (req, res, next) => {
 
       if (!cached && store.busy) throw new Error('Ops.. Busy service!');
 
-      const config = { ...Settings.defaults };
+      const config = { ...Settings.defaults, ...req.query };
       config.url = req.query.url;
       config.labels = parseLabelsParam(req.query.labels || []);
-      config.mimeTypes = parseMimeTypesParam(req.query.mimeTypes || constants.defaultMimeTypes);
 
       if (!cached) {
         const metrics = await getMetrics(config.url, config);

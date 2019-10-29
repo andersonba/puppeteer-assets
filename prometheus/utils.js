@@ -25,15 +25,10 @@ function parseLabelsParam(arr) {
     : {};
 }
 
-function parseMimeTypesParam(arr) {
-  return isArray(arr) ? arr : [];
-}
-
 module.exports = {
   env,
   envArray,
   envBool,
   envInt,
   parseLabelsParam,
-  parseMimeTypesParam,
 };
