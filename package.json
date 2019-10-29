@@ -1,6 +1,6 @@
 {
   "name": "puppeteer-assets",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Assets metrics using Puppeteer",
   "main": "index.js",
   "bin": "bin/cli.js",
