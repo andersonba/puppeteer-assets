@@ -62,9 +62,9 @@ async function run(plainUrl, options = {}) {
   // --- Generating report ---
   const output = {
     assets,
-    count: { internal: {}, external: {} },
-    size: { internal: {}, external: {} },
-    gzip: { internal: {}, external: {} },
+    count: { internal: { total: 0 }, external: { total: 0 } },
+    size: { internal: { total: 0 }, external: { total: 0 } },
+    gzip: { internal: { total: 0 }, external: { total: 0 } },
   };
 
   Object.values(assets).forEach((asset) => {
