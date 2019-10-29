@@ -19,7 +19,7 @@ services:
   prometheus:
     image: quay.io/prometheus/prometheus
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus.ondemand.yml:/etc/prometheus/prometheus.yml
     links:
       - server
     ports:
@@ -34,4 +34,5 @@ services:
 
 volumes:
   prometheus.yml:
+  prometheus.ondemand.yml:
   config.example.yml:

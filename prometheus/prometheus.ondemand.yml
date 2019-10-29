@@ -5,8 +5,7 @@ scrape_configs:
     metrics_path: /metrics
     scheme: http
     params:
-      url:
-        - www.andersonba.com
+      url: ["www.andersonba.com"]
       labels:
         - "site:andersonba"
     static_configs:
@@ -17,8 +16,7 @@ scrape_configs:
     metrics_path: /metrics
     scheme: http
     params:
-      url:
-        - https://andersonba.github.io/yve-bot/
+      url: ["https://andersonba.github.io/yve-bot/"]
       labels:
         - "site:yvebot"
       cookies:
