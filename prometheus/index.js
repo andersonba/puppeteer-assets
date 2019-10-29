@@ -5,8 +5,9 @@ const promClient = require('prom-client');
 const { get } = require('lodash');
 const Store = require('./store');
 const Settings = require('./settings');
+const constants = require('../constants');
 const getMetrics = require('..');
-const { env, parseLabelsParam } = require('./utils');
+const { env, parseLabelsParam, ensureArrayParam } = require('./utils');
 
 const store = new Store({
   cacheTTL: Settings.onDemandQueryCacheTTL,
@@ -252,6 +253,8 @@ app.get(Settings.path, async (req, res, next) => {
       console.log('> Requesting on-demand:', req.query.url, cached ? '[cache]' : '');
 
       if (!cached && store.busy) throw new Error('Ops.. Busy service!');
+
+      constants.arrayParams.forEach((p) => ensureArrayParam(req.query, p));
 
       const config = { ...Settings.defaults, ...req.query };
       config.url = req.query.url;

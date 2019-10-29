@@ -25,10 +25,20 @@ function parseLabelsParam(arr) {
     : {};
 }
 
+function ensureArrayParam(query, key) {
+  if (key in query) {
+    if (!isArray(query[key])) {
+      // eslint-disable-next-line no-param-reassign
+      query[key] = [query[key]];
+    }
+  }
+}
+
 module.exports = {
   env,
   envArray,
   envBool,
   envInt,
   parseLabelsParam,
+  ensureArrayParam,
 };
