@@ -1,4 +1,4 @@
-FROM alekzonder/puppeteer
+FROM buildkite/puppeteer
 
 ENV PORT 3000
 ENV NODE_ENV production
