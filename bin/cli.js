@@ -15,19 +15,19 @@ const { argv } = yargs
     describe: 'Website URL',
     type: 'string',
   }))
-  .array('mimeTypes')
   .option('mimeTypes', {
+    array: true,
     alias: 't',
     describe: 'Filter assets based on mime type',
     default: ['javascript'],
   })
-  .array('internalPatterns')
   .option('internalPatterns', {
+    array: true,
     alias: 'i',
     describe: 'Set assets as internal assets based on regex pattern',
   })
-  .array('ignorePatterns')
   .option('ignorePatterns', {
+    array: true,
     alias: 'ignore',
     describe: 'Ignore assets based on regex pattern',
   })
@@ -92,4 +92,5 @@ run(url, options)
   .catch((err) => {
     loading.stop();
     console.error('Error occurred', err);
+    process.exit();
   });

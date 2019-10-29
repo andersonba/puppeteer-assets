@@ -281,7 +281,7 @@ app.get(Settings.path, async (req, res, next) => {
   next();
 });
 
-app.get('/check', (req, res) => res.send('OK'));
+app.get('/check', (_, res) => res.send('OK'));
 
 const server = app.listen(env('PORT', 3000), () => {
   configureTimer();

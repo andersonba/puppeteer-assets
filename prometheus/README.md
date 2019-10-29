@@ -44,6 +44,7 @@ The metrics of each URL are stored in the cache for **300** seconds, check the `
 | `url` | **Required**. Page URL | `string` | `?url=google.com`
 | `labels[]` | List of `key:value` labels | `Array<string>` | `?labels[]=page:anderson&labels[]=section:home`
 | `mimeTypes[]` | List of mimeTypes to be filtered | `Array<string>` | `?mimeTypes[]=javascript&mimeTypes[]=css`
+| `cookies[]` | List of cookies to be defined | `Array<string>` | `?cookies[]='name=user;value=123'`
 | `nocache`| Force scrap without cache | `boolean` | `?nocache=1`
 
 ### Using a configuration file (Job scheduler)
