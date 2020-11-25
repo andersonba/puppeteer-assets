@@ -1,9 +1,11 @@
 {
   "name": "puppeteer-assets",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Assets metrics using Puppeteer",
   "main": "index.js",
-  "bin": "bin/cli.js",
+  "bin": {
+    "puppeteer-assets": "bin/cli.js"
+  },
   "repository": "https://github.com/andersonba/puppeteer-assets",
   "author": "Anderson de Oliveira",
   "license": "MIT",
