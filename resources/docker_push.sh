@@ -1,5 +1,12 @@
 #!/bin/bash
 
+if ! command -v json &> /dev/null
+then
+  echo 'command "json" not found'
+  echo 'run to install: yarn add global json'
+  exit 1
+fi
+
 REPO="andersonba/prometheus-assets"
 VERSION=$(cat package.json |json version)
 
