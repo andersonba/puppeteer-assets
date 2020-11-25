@@ -36,6 +36,11 @@ const { argv } = yargs
     alias: 'c',
     describe: 'Set cookies before open page',
     type: 'string',
+  })
+  .option('userAgent', {
+    alias: 'u',
+    describe: 'Set userAgent before open page',
+    type: 'string',
   });
 
 const { url, ...args } = argv;
