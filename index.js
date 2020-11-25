@@ -64,9 +64,15 @@ async function run(plainUrl, options = {}) {
   if (isArray(options.cookies)) {
     await page.setCookie(...options.cookies.map((str) => {
       const parsed = cookie.parse(str);
-      if (!parsed.name) throw new Error(`Missing "name" value from cookie: ${str}`);
-      if (!parsed.value) throw new Error(`Missing "value" value from cookie: ${str}`);
-      return parsed;
+      const output = {};
+      Object.keys(parsed).forEach((key) => {
+        output.name = key;
+        output.value = parsed[key];
+        output.url = pageUrl;
+      });
+      if (!output.name) throw new Error(`Missing "name" value from cookie: ${str}`);
+      if (!output.value) throw new Error(`Missing "value" value from cookie: ${str}`);
+      return output;
     }));
   }
   await page.goto(pageUrl, { waitUntil: 'networkidle0' });
