@@ -75,6 +75,9 @@ async function run(plainUrl, options = {}) {
       return output;
     }));
   }
+  if (options.userAgent) {
+    await page.setUserAgent(options.userAgent);
+  }
   await page.goto(pageUrl, { waitUntil: 'networkidle0' });
   await browser.close();
 
