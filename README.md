@@ -90,11 +90,12 @@ You can use the [official built-in server](./prometheus/README.md).
 
 #### `assetsMetrics(url, options)`
 
-| Parameter | Description | Type | Default |
-|-----------|-------------|------|---------|
-| `url` | **Required.** Page URL | `string`
-| `options.mimeTypes` |  MimeTypes to be filtered in the metrics. You can use mapped mimeTypes from `options.mimeTypePatterns` | `Array<RegExp \| string> ` | `['javascript']`
-| `options.mimeTypePatterns` | Map the mimeTypes based on regex patterns | `Array<RegExp \| string>` | `{ javascript: ['javascript'], css: ['css'] }`
-| `options.ignorePatterns` | Ignore assets based on regex patterns | `Array<RegExp \| string>` | `[]`
-| `options.internalPatterns` | Mark asset as internal type based on regex patterns | `Array<RegExp \| string>` | `[/^(\/\|.\/)/]`
-| `options.cookies` | Define cookies on the browser using the standard cookie format. Fields `name` and `value` are required in the string. Example: `name=current_user; value=123456; domain=andersonba.com; path=/`. | `Array<string>` | `[]`
+| Parameter                  | Description                                                                                                                                                                                      | Type                       | Default                                        |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------- | ---------------------------------------------- |
+| `url`                      | **Required.** Page URL                                                                                                                                                                           | `string`                   |
+| `options.mimeTypes`        | MimeTypes to be filtered in the metrics. You can use mapped mimeTypes from `options.mimeTypePatterns`                                                                                            | `Array<RegExp \| string> ` | `['javascript']`                               |
+| `options.mimeTypePatterns` | Map the mimeTypes based on regex patterns                                                                                                                                                        | `Array<RegExp \| string>`  | `{ javascript: ['javascript'], css: ['css'] }` |
+| `options.ignorePatterns`   | Ignore assets based on regex patterns                                                                                                                                                            | `Array<RegExp \| string>`  | `[]`                                           |
+| `options.internalPatterns` | Mark asset as internal type based on regex patterns                                                                                                                                              | `Array<RegExp \| string>`  | `[/^(\/\|.\/)/]`                               |
+| `options.cookies`          | Define cookies on the browser using the standard cookie format. Fields `name` and `value` are required in the string. Example: `name=current_user; value=123456; domain=andersonba.com; path=/`. | `Array<string>`            | `[]`                                           |
+| `options.userAgent`        | Define the userAgent to the browser                                                                                                                                                              | `string`                   |
