@@ -2,7 +2,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const promClient = require('prom-client');
-const { get } = require('lodash');
+const { get, merge } = require('lodash');
 const sequential = require('promise-sequential');
 const Store = require('./store');
 const Settings = require('./settings');
@@ -113,7 +113,7 @@ function registerMetrics(metrics, config, {
 }
 
 function setupMetrics(configurations, overrideSettings = {}) {
-  const { metricName, labels: labelKeys } = { ...Settings, ...overrideSettings };
+  const { metricName, labels: labelKeys } = merge({}, Settings, overrideSettings);
 
   promClient.register.clear();
 
@@ -211,7 +211,8 @@ function configureTimer() {
     store.busy = true;
     await sequential(
       Settings.configurations.map((config) => async () => {
-        const metrics = await getMetrics(config.url, config);
+        console.log(`> timer: scraping ${config.url}`);
+        const metrics = await getMetrics(config.url, merge({}, Settings.defaults, config));
         if (metrics) store.set(config.url, metrics);
       }),
     );
@@ -257,7 +258,7 @@ app.get(Settings.path, async (req, res, next) => {
 
       constants.arrayParams.forEach((p) => ensureArrayParam(req.query, p));
 
-      const config = { ...Settings.defaults, ...req.query };
+      const config = merge({}, Settings.defaults, req.query);
       config.url = req.query.url;
       config.labels = parseLabelsParam(req.query.labels || []);
 
