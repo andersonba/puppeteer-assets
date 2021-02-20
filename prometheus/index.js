@@ -3,6 +3,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const promClient = require('prom-client');
 const { get } = require('lodash');
+const sequential = require('promise-sequential');
 const Store = require('./store');
 const Settings = require('./settings');
 const constants = require('../constants');
@@ -208,8 +209,8 @@ function configureTimer() {
 
   async function execute() {
     store.busy = true;
-    await Promise.all(
-      Settings.configurations.map(async (config) => {
+    await sequential(
+      Settings.configurations.map((config) => async () => {
         const metrics = await getMetrics(config.url, config);
         if (metrics) store.set(config.url, metrics);
       }),
