@@ -83,6 +83,7 @@ function registerMetrics(metrics, config, {
           size,
           gzip,
           mime_type: mimeType,
+          ...labels,
         },
         ts,
       );
